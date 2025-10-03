@@ -17,6 +17,9 @@ export function Queue() {
       },
     }),
   )
+  const { data: completedFiles } = useQuery(
+    trpc.getCompletedFiles.queryOptions(),
+  )
   const addToQueue = useMutation(
     trpc.addToQueue.mutationOptions({
       onSettled: () => {
@@ -37,6 +40,9 @@ export function Queue() {
     <>
       <ScrollArea className="h-[500px] rounded-md border">
         <div className="flex flex-col gap-4 p-4 pt-4">
+          {completedFiles?.map((file) => (
+            <File key={file.id} fileid={file.id} />
+          ))}
           {downloadSorted?.map((file) => (
             <File key={file.id} fileid={file.id} fileStatus={file} />
           ))}
@@ -65,7 +71,7 @@ export function Queue() {
         <Button
           onClick={() => {
             queryClient.invalidateQueries({
-              queryKey: trpc.getQueue.queryKey(),
+              queryKey: trpc.getCompletedFiles.queryKey(),
             })
           }}
         >

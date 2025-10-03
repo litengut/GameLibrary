@@ -56,6 +56,9 @@ export const appRouter = {
   startQueue: publicProcedure.mutation(() => {
     return startQueue()
   }),
+  getCompletedFiles: publicProcedure.query(() => {
+    return Array.from(files.values()).filter((f) => f.status === 'completed')
+  }),
 }
 
 export const trpcRouter = createTRPCRouter({

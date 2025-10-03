@@ -4,6 +4,7 @@ import axios from 'axios'
 
 import bytes from 'bytes'
 
+import { files } from './files'
 import type { DownloadingFile, DownloadingFileStatus, GameFile } from './type'
 import type { Readable } from 'node:stream'
 import type { AxiosResponse } from 'axios'
@@ -33,6 +34,8 @@ export async function downloadFile(
   const sizeBytes = parseInt(response.headers['content-length'], 10)
 
   response.data.pipe(writer)
+  // set file status to downloading
+  files.get(gameFile.id)!.status = 'downloading'
 
   const file: DownloadingFile = {
     id: gameFile.id,
@@ -59,10 +62,10 @@ export async function downloadFile(
   downloading.set(gameFile.id, file)
   writer.on('finish', () => {
     console.log('\nDownload completed!')
-    fireWaitingPromises()
     downloading.delete(gameFile.id)
     fireWaitingPromises()
     console.log(Array.from(downloading.values()))
+    files.get(gameFile.id)!.status = 'completed'
   })
 }
 
@@ -86,7 +89,7 @@ export async function* getDownloadingFileProgress(filename: string) {
     const percent = (file.downloadedBytes / file.sizeBytes) * 100
 
     const elapsed = (Date.now() - file.startTime) / 1000 // seconds
-    const speed = file.downloadedBytes / 1024 / 1024 / elapsed // MB/s
+    const speed = file.downloadedBytes / elapsed // B/s
     const downloadedBytes = file.downloadedBytes
     const totalBytes = file.sizeBytes
     const report: DownloadingFileStatus = {
@@ -111,7 +114,7 @@ export async function* getDownloadingFilesProgress() {
             Array.from(downloading.values()).map((f) => {
               const percent = (f.downloadedBytes / f.sizeBytes) * 100
               const elapsed = (Date.now() - f.startTime) / 1000 // seconds
-              const speed = f.downloadedBytes / 1024 / 1024 / elapsed
+              const speed = f.downloadedBytes / elapsed
               const downloadedBytes = f.downloadedBytes
               const totalBytes = f.sizeBytes
 

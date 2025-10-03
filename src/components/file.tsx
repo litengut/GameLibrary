@@ -9,7 +9,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
-import bytes from 'bytes'
+
 import { useQuery } from '@tanstack/react-query'
 import { Button } from './ui/button'
 import { Progress } from './ui/progress'
@@ -74,6 +74,13 @@ export function File(props: {
       </Badge>
     )
   }
+  const bytes = (bytes: number) => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]
+  }
 
   return (
     <div key={file.id} className="group">
@@ -96,7 +103,8 @@ export function File(props: {
               </p>
               {fileStatus?.speed && (
                 <p className="text-xs text-blue-400 font-medium">
-                  {fileStatus?.speed}
+                  {bytes(fileStatus.speed)}
+                  /s
                 </p>
               )}
               {/* {fileStatus.timeRemaining && (
@@ -111,7 +119,7 @@ export function File(props: {
         <div className="flex items-center gap-3 ">
           <div className="w-24 @xl:block hidden">
             <Progress
-              value={fileStatus?.percent || 0}
+              value={fileStatus?.percent}
               className="h-2"
               style={{
                 background:
@@ -120,7 +128,7 @@ export function File(props: {
             />
           </div>
           <span className="text-xs text-muted-foreground w-12 text-right font-mono @xl:block hidden">
-            {fileStatus?.percent || 0}%
+            {(fileStatus?.percent || 0).toFixed(0)}%
           </span>
 
           {/* Action buttons - only show on hover or for active files */}
