@@ -1,67 +1,79 @@
 import * as fs from 'node:fs'
+
 import axios from 'axios'
 
+import bytes from 'bytes'
+
+import type { DownloadingFile, DownloadingFileStatus, GameFile } from './type'
 import type { Readable } from 'node:stream'
 import type { AxiosResponse } from 'axios'
 
-type DownloadingFile = {
-  name: string
-  downloaded: number
-  totalLength: number
-  startTime: number
-  stream: Readable
+const downloading = new Map<string, DownloadingFile>()
+const PromisesWaitingForNextFileChunk: Array<{ (value: void): void }> = []
+
+function fireWaitingPromises() {
+  PromisesWaitingForNextFileChunk.map((f) => {
+    f()
+  })
+  PromisesWaitingForNextFileChunk.length = 0
 }
 
-const downloading = new Map<string, DownloadingFile>()
-const PromisesWaitingForNextFile: Array<{ (value: void): void }> = []
-
 export async function downloadFile(
-  fileUrl: string,
+  gameFile: GameFile,
   outputLocationPath: string,
 ) {
   const writer = fs.createWriteStream(outputLocationPath)
-  const response: AxiosResponse<Readable> = await axios.get<Readable>(fileUrl, {
-    responseType: 'stream',
-  })
+  const response: AxiosResponse<Readable> = await axios.get<Readable>(
+    gameFile.url,
+    {
+      responseType: 'stream',
+    },
+  )
 
-  const totalLength = parseInt(response.headers['content-length'], 10)
+  const sizeBytes = parseInt(response.headers['content-length'], 10)
 
   response.data.pipe(writer)
 
   const file: DownloadingFile = {
-    name: fileUrl,
+    id: gameFile.id,
+    name: gameFile.name,
+    url: gameFile.url,
     stream: response.data,
-    downloaded: 0,
-    totalLength,
+    downloadedBytes: 0,
+    sizeBytes,
     startTime: Date.now(),
+    status: 'downloading',
   }
-  downloading.set(fileUrl, file)
+  downloading.set(file.id, file)
 
   let downloaded = 0
   response.data.on('data', (chunk: Buffer) => {
     downloaded += chunk.length
-    const file = downloading.get(fileUrl)
+    const file = downloading.get(gameFile.id)
     if (!file) return
-    file.downloaded = downloaded
-    downloading.set(fileUrl, file)
-    PromisesWaitingForNextFile.map((f) => {
-      f()
-    })
+    file.downloadedBytes = downloaded
+    downloading.set(gameFile.id, file)
+    fireWaitingPromises()
   })
 
-  downloading.set(fileUrl, file)
+  downloading.set(gameFile.id, file)
   writer.on('finish', () => {
     console.log('\nDownload completed!')
-    PromisesWaitingForNextFile.map((f) => {
-      f()
-    })
-    downloading.delete(fileUrl)
+    fireWaitingPromises()
+    downloading.delete(gameFile.id)
+    fireWaitingPromises()
     console.log(Array.from(downloading.values()))
   })
 }
 
-export function getDownloadingFileNames() {
-  return downloading.keys()
+export function getDownloadingFiles(): Array<GameFile> {
+  return [...downloading.values()].map((f) => ({
+    id: f.id,
+    name: f.name,
+    url: f.url,
+    sizeBytes: f.sizeBytes,
+    status: f.status,
+  }))
 }
 
 export async function* getDownloadingFileProgress(filename: string) {
@@ -71,18 +83,19 @@ export async function* getDownloadingFileProgress(filename: string) {
     const file = downloading.get(filename)
     if (!file) return
 
-    const percent = ((file.downloaded / file.totalLength) * 100).toFixed(2)
+    const percent = (file.downloadedBytes / file.sizeBytes) * 100
 
     const elapsed = (Date.now() - file.startTime) / 1000 // seconds
-    const speed = (file.downloaded / 1024 / 1024 / elapsed).toFixed(2) // MB/s
-    const downloadedMB = (file.downloaded / 1024 / 1024).toFixed(2)
-    const totalMB = (file.totalLength / 1024 / 1024).toFixed(2)
-    const report = {
+    const speed = file.downloadedBytes / 1024 / 1024 / elapsed // MB/s
+    const downloadedBytes = file.downloadedBytes
+    const totalBytes = file.sizeBytes
+    const report: DownloadingFileStatus = {
+      id: file.id,
       percent,
       elapsed,
       speed,
-      downloadedMB,
-      totalMB,
+      downloadedBytes,
+      totalBytes,
     }
     console.log(report)
     yield report
@@ -91,27 +104,31 @@ export async function* getDownloadingFileProgress(filename: string) {
 
 export async function* getDownloadingFilesProgress() {
   while (true) {
-    yield new Promise((resolve) => {
-      PromisesWaitingForNextFile.push(() =>
-        resolve(
-          Array.from(downloading.values()).map((f) => {
-            const percent = ((f.downloaded / f.totalLength) * 100).toFixed(2)
-            const elapsed = (Date.now() - f.startTime) / 1000 // seconds
-            const speed = (f.downloaded / 1024 / 1024 / elapsed).toFixed(2) // MB/s
-            const downloadedMB = (f.downloaded / 1024 / 1024).toFixed(2)
-            const totalMB = (f.totalLength / 1024 / 1024).toFixed(2)
-            const report = {
-              percent,
-              elapsed,
-              speed,
-              downloadedMB,
-              totalMB,
-            }
-            return report
-          }),
-        ),
-      )
-    })
+    yield new Promise(
+      (resolve: (value: Array<DownloadingFileStatus>) => void) => {
+        PromisesWaitingForNextFileChunk.push(() =>
+          resolve(
+            Array.from(downloading.values()).map((f) => {
+              const percent = (f.downloadedBytes / f.sizeBytes) * 100
+              const elapsed = (Date.now() - f.startTime) / 1000 // seconds
+              const speed = f.downloadedBytes / 1024 / 1024 / elapsed
+              const downloadedBytes = f.downloadedBytes
+              const totalBytes = f.sizeBytes
+
+              const report = {
+                id: f.id,
+                percent,
+                elapsed,
+                speed,
+                downloadedBytes,
+                totalBytes,
+              }
+              return report
+            }),
+          ),
+        )
+      },
+    )
   }
 }
 

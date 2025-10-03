@@ -1,4 +1,6 @@
-type Game = {
+import type { Readable } from 'node:stream'
+
+export type Game = {
   id: string
   title: string
   totalSize: string
@@ -15,14 +17,31 @@ type Game = {
   version?: string
 }
 
-type GameFile = {
+export type GameFile = {
   id: string
   name: string
-  size: string
+  url: string
   sizeBytes: number
-  progress: number
   status: 'downloading' | 'completed' | 'paused' | 'error' | 'pending'
-  speed?: string
-  timeRemaining?: string
+}
+
+export type DownloadingFile = {
+  id: string
+  name: string
+  url: string
   downloadedBytes: number
+  sizeBytes: number
+  startTime: number
+  stream: Readable
+
+  status: 'downloading' | 'completed' | 'paused' | 'error' | 'pending'
+}
+
+export type DownloadingFileStatus = {
+  id: string
+  percent: number
+  elapsed: number
+  speed: number
+  downloadedBytes: number
+  totalBytes: number
 }

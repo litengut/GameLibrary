@@ -54,8 +54,8 @@
     "@trpc/client": "^11.4.3",
     "@trpc/server": "^11.4.3",
     "@trpc/tanstack-react-query": "^11.4.3",
-    "@types/bun": "^1.2.23",
     "axios": "^1.12.2",
+    "bytes": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -80,6 +80,8 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.23",
+    "@types/bytes": "^3.1.5",
     "@tanstack/eslint-config": "^0.3.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.2.0",

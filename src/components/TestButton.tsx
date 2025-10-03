@@ -7,7 +7,6 @@ import { useTRPC } from '@/server/react'
 
 export function TestButton() {
   const trpc = useTRPC()
-  const mutate = useMutation(trpc.file.mutationOptions())
 
   const sub = useSubscription(
     trpc.allSpeed.subscriptionOptions(undefined, {
@@ -16,11 +15,10 @@ export function TestButton() {
       },
     }),
   )
+
   console.log(JSON.stringify(sub.data))
 
   function onClick() {
-    mutate.mutate('test')
-
     console.log(JSON.stringify(sub.data))
   }
   return (

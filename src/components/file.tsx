@@ -9,12 +9,25 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useState } from 'react'
+import bytes from 'bytes'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from './ui/button'
 import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
+import type { DownloadingFileStatus, GameFile } from '@/server/type'
+import { useTRPC } from '@/server/react'
 
-export function File() {
+export function File(props: {
+  fileid: string
+  fileStatus?: DownloadingFileStatus
+}) {
+  const { fileStatus } = props
+  const trpc = useTRPC()
+  const { data: file } = useQuery(trpc.file.queryOptions(props.fileid))
   const [toggle, setToggle] = useState(false)
+
+  if (!file) return null
+
   const toggleFileExpansion = (fileId: string) => {
     // const newExpanded = new Set(expandedFiles);
     // if (newExpanded.has(fileId)) {
@@ -28,18 +41,6 @@ export function File() {
     fileId: string,
     action: 'pause' | 'resume' | 'retry' | 'delete',
   ) => {}
-
-  const file: GameFile = {
-    id: 'file-1',
-    name: 'GameInstaller.part1.rar',
-    size: '1.5 GB',
-    sizeBytes: 1.5 * 1024 * 1024 * 1024,
-    downloadedBytes: (1.5 * 1024 * 1024 * 1024 * 42) / 100,
-    status: 'downloading',
-    progress: 42,
-    speed: '3.2 MB/s',
-    timeRemaining: '12m 30s',
-  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -73,15 +74,6 @@ export function File() {
       </Badge>
     )
   }
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return (
-      Number.parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-    )
-  }
 
   return (
     <div key={file.id} className="group">
@@ -99,17 +91,19 @@ export function File() {
               {getStatusBadge(file.status)}
             </div>
             <div className="flex items-center gap-4 mt-1">
-              <p className="text-xs text-muted-foreground">{file.size}</p>
-              {file.speed && (
+              <p className="text-xs text-muted-foreground">
+                {bytes(file.sizeBytes)}
+              </p>
+              {fileStatus?.speed && (
                 <p className="text-xs text-blue-400 font-medium">
-                  {file.speed}
+                  {fileStatus?.speed}
                 </p>
               )}
-              {file.timeRemaining && (
+              {/* {fileStatus.timeRemaining && (
                 <p className="text-xs text-muted-foreground">
-                  ETA: {file.timeRemaining}
+                  ETA: {fileStatus.timeRemaining}
                 </p>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -117,7 +111,7 @@ export function File() {
         <div className="flex items-center gap-3 ">
           <div className="w-24 @xl:block hidden">
             <Progress
-              value={file.progress}
+              value={fileStatus?.percent || 0}
               className="h-2"
               style={{
                 background:
@@ -126,7 +120,7 @@ export function File() {
             />
           </div>
           <span className="text-xs text-muted-foreground w-12 text-right font-mono @xl:block hidden">
-            {file.progress}%
+            {fileStatus?.percent || 0}%
           </span>
 
           {/* Action buttons - only show on hover or for active files */}
@@ -189,12 +183,14 @@ export function File() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
             <div>
               <p className="text-muted-foreground">Downloaded</p>
-              <p className="font-mono">{formatBytes(file.downloadedBytes)}</p>
+              <p className="font-mono">
+                {bytes(fileStatus?.downloadedBytes || 0)}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Remaining</p>
               <p className="font-mono">
-                {formatBytes(file.sizeBytes - file.downloadedBytes)}
+                {bytes(file.sizeBytes - (fileStatus?.downloadedBytes || 0))}
               </p>
             </div>
             <div>
@@ -208,7 +204,7 @@ export function File() {
             </div>
             <div>
               <p className="text-muted-foreground">Chunk Size</p>
-              <p className="font-mono">5.0 GB</p>
+              <p className="font-mono">{bytes(file.sizeBytes)}</p>
             </div>
           </div>
 
