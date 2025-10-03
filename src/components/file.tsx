@@ -114,8 +114,8 @@ export function File() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 @md:bg-green-600 ">
-          <div className="w-24">
+        <div className="flex items-center gap-3 ">
+          <div className="w-24 @xl:block hidden">
             <Progress
               value={file.progress}
               className="h-2"
@@ -125,7 +125,7 @@ export function File() {
               }}
             />
           </div>
-          <span className="text-xs text-muted-foreground w-12 text-right font-mono">
+          <span className="text-xs text-muted-foreground w-12 text-right font-mono @xl:block hidden">
             {file.progress}%
           </span>
 

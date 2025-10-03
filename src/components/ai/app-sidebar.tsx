@@ -9,9 +9,8 @@ import {
   Settings,
   Sliders,
   User2,
-} from "lucide-react";
+} from 'lucide-react'
 
-import { TestButton } from "../TestButton";
 import {
   Sidebar,
   SidebarContent,
@@ -24,80 +23,80 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/dropdown-menu'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 // Menu items.
 const data = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
+      title: 'Dashboard',
+      url: '#',
       icon: Home,
       isActive: true,
     },
     {
-      title: "Downloads",
-      url: "#downloads",
+      title: 'Downloads',
+      url: '#downloads',
       icon: Download,
     },
     {
-      title: "Monitor",
-      url: "#monitor",
+      title: 'Monitor',
+      url: '#monitor',
       icon: BarChart3,
     },
     {
-      title: "Controls",
-      url: "#controls",
+      title: 'Controls',
+      url: '#controls',
       icon: Sliders,
     },
     {
-      title: "Library",
-      url: "#library",
+      title: 'Library',
+      url: '#library',
       icon: Library,
     },
   ],
   navSecondary: [
     {
-      title: "System",
-      url: "#",
+      title: 'System',
+      url: '#',
       icon: Monitor,
     },
     {
-      title: "Settings",
-      url: "#",
+      title: 'Settings',
+      url: '#',
       icon: Settings,
     },
   ],
-};
+}
 
 interface AppSidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab: string
+  onTabChange: (tab: string) => void
 }
 
 export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
   const handleNavClick = (url: string) => {
-    if (url.startsWith("#")) {
-      const tab = url.substring(1);
+    if (url.startsWith('#')) {
+      const tab = url.substring(1)
       if (
-        tab === "downloads" ||
-        tab === "monitor" ||
-        tab === "controls" ||
-        tab === "library"
+        tab === 'downloads' ||
+        tab === 'monitor' ||
+        tab === 'controls' ||
+        tab === 'library'
       ) {
-        onTabChange(tab);
+        onTabChange(tab)
       } else {
-        onTabChange("downloads"); // Default to downloads for dashboard
+        onTabChange('downloads') // Default to downloads for dashboard
       }
     }
-  };
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -113,7 +112,7 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Game Manager</span>
-                <TestButton></TestButton>
+
                 <span className="truncate text-xs text-sidebar-foreground/70">
                   Download Hub
                 </span>
@@ -133,13 +132,13 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
                     tooltip={item.title}
                     onClick={() => handleNavClick(item.url)}
                     isActive={
-                      (item.title === "Dashboard" &&
-                        activeTab === "downloads") ||
-                      (item.title === "Downloads" &&
-                        activeTab === "downloads") ||
-                      (item.title === "Monitor" && activeTab === "monitor") ||
-                      (item.title === "Controls" && activeTab === "controls") ||
-                      (item.title === "Library" && activeTab === "library")
+                      (item.title === 'Dashboard' &&
+                        activeTab === 'downloads') ||
+                      (item.title === 'Downloads' &&
+                        activeTab === 'downloads') ||
+                      (item.title === 'Monitor' && activeTab === 'monitor') ||
+                      (item.title === 'Controls' && activeTab === 'controls') ||
+                      (item.title === 'Library' && activeTab === 'library')
                     }
                   >
                     <item.icon />
@@ -208,5 +207,5 @@ export function AppSidebar({ activeTab, onTabChange }: AppSidebarProps) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

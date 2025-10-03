@@ -1,6 +1,12 @@
 import { QueryClient } from '@tanstack/react-query'
 import superjson from 'superjson'
-import { createTRPCClient, httpBatchStreamLink } from '@trpc/client'
+import {
+  createTRPCClient,
+  httpBatchLink,
+  httpBatchStreamLink,
+  httpSubscriptionLink,
+  splitLink,
+} from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 
 import type { TRPCRouter } from '@/server/router'
@@ -17,9 +23,17 @@ function getUrl() {
 
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
-    httpBatchStreamLink({
-      transformer: superjson,
-      url: getUrl(),
+    splitLink({
+      // uses the httpSubscriptionLink for subscriptions
+      condition: (op) => op.type === 'subscription',
+      true: httpSubscriptionLink({
+        transformer: superjson,
+        url: getUrl(),
+      }),
+      false: httpBatchStreamLink({
+        transformer: superjson,
+        url: getUrl(),
+      }),
     }),
   ],
 })
