@@ -15,6 +15,7 @@ import type { TRPCOptionsProxy } from '@trpc/tanstack-react-query'
 
 import TanStackQueryDevtools from '@/components/devtools'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SidebarProvider } from '@/components/ui/sidebar'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -64,7 +65,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SidebarProvider>{children}</SidebarProvider>
           <TanStackDevtools
             config={{
               position: 'bottom-left',

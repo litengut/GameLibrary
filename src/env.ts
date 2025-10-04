@@ -4,6 +4,7 @@ import { z } from 'zod'
 export const env = createEnv({
   server: {
     SERVER_URL: z.string().url().optional(),
+    DIRECTORY: z.string(),
   },
 
   /**
@@ -27,7 +28,7 @@ export const env = createEnv({
    * the Zod validator.
    *
    * This means that if you have an empty string for a value that is supposed
-   * to be a number (e.g. `PORT=` in a ".env" file), Zod will incorrectly flag
+   * to be a number (e.g. `PORT=` in a ".env" file), Zod will incorrectly, flag
    * it as a type mismatch violation. Additionally, if you have an empty string
    * for a value that is supposed to be a string with a default value (e.g.
    * `DOMAIN=` in an ".env" file), the default value will never be applied.

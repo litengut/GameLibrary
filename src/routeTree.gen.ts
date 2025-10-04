@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardLibraryRouteImport } from './routes/dashboard.library'
 import { Route as DashboardAiRouteImport } from './routes/dashboard.ai'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 
@@ -30,6 +31,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardLibraryRoute = DashboardLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardAiRoute = DashboardAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -45,12 +51,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/ai': typeof DashboardAiRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard/ai': typeof DashboardAiRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/dashboard/ai': typeof DashboardAiRoute
+  '/dashboard/library': typeof DashboardLibraryRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
@@ -68,15 +77,22 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/dashboard/ai'
+    | '/dashboard/library'
     | '/dashboard/'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard/ai' | '/dashboard' | '/api/trpc/$'
+  to:
+    | '/'
+    | '/dashboard/ai'
+    | '/dashboard/library'
+    | '/dashboard'
+    | '/api/trpc/$'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/dashboard/ai'
+    | '/dashboard/library'
     | '/dashboard/'
     | '/api/trpc/$'
   fileRoutesById: FileRoutesById
@@ -110,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/library': {
+      id: '/dashboard/library'
+      path: '/library'
+      fullPath: '/dashboard/library'
+      preLoaderRoute: typeof DashboardLibraryRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/ai': {
       id: '/dashboard/ai'
       path: '/ai'
@@ -129,11 +152,13 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteChildren {
   DashboardAiRoute: typeof DashboardAiRoute
+  DashboardLibraryRoute: typeof DashboardLibraryRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAiRoute: DashboardAiRoute,
+  DashboardLibraryRoute: DashboardLibraryRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 
